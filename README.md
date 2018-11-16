@@ -6,11 +6,15 @@ This is an early Proof of concept for a Hook implementation, *a bit different th
 I'm still working on it to have better examples.
 
 ### Goal and motivation
-This is for [Preact](https://preactjs.com/) and the goal is to maintain minimal output size, with maximal code flexibility and execution performaces.
-I'm not 100% OK with the React Hooks proposal. To much hooks declared inside each render could, I think, lead to performances issues. These performaces issues could not exists with the Class system, so this is a drawback to avoid.
-Also, the "don't use hooks in conditions" is an issue to me, because it shows that there is to much auto-magic stuff going on under the hood. Which is not aviced when you dive in a new lib. People need to understands how it works so it's not frustrating. Also, to me, linters should not be mandatory to use a lib.
+1. This is for [Preact](https://preactjs.com/) and the goal is to maintain minimal output size, with maximal code flexibility and execution performaces.
+2. I'm not 100% OK with the React Hooks proposal. To much hooks declared inside each render could, I think, lead to performances issues. These performaces issues does not exist with the Class system, so this is a drawback added by hooks we need to avoid.
+React as a solution for patching performances with `useMemoization` and `useCallback` hooks but this is overkill with this implementation.
+3. Also, the "don't use hooks in conditions" is a problem to me. It shows that there is to much "auto-magic" stuff going on under the hood. Which is not aviced when you dive into a new lib / way of thinking. People need to understands how it works so it's not frustrating. And to me, linters should not be mandatory to use a lib, syntax have to be expressive and clear.
+
+### Size
 For now the POC is *2KB not GZip* added to the Preact core with `useState`, `useEffect` and better `useRef`.
 This example is *14KB not GZip* with Preact + Prehook + working example.
+I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 
 ### Differences
 1. Components are still pure functions, but they have to phases.
@@ -38,8 +42,6 @@ Example :
 The lib :
 - [prehook.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/prehook.ts)
 - [useRef.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/useRef.ts)
-
-
 
 ## Installation
 
