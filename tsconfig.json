@@ -1,0 +1,13 @@
+{
+	"compilerOptions" : {
+		"jsx": "react",
+		"jsxFactory" : "h",
+		"lib": ["dom", "esnext"]
+	},
+	"include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
