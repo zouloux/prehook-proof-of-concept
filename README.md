@@ -1,4 +1,4 @@
-# prehook-proof-of-concept
+# Prehook (Preact + Hooks) Proof Of Concept
 This is a proof of concept of a [React Hooks](https://reactjs.org/docs/hooks-reference.html) like implementation for [Preact](https://preactjs.com/).
 
 ## Important !
