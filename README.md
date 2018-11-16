@@ -4,10 +4,13 @@ This is a proof of concept of a React Hook like implementation for Preact.
 
 ## Important !
 
-This is an early Proof of concept for a Hook implementation, a bit different than the React approach.
+### Goal
+This is an early Proof of concept for a Hook implementation, *a bit different than the React approach*.
 This is for Preact and the goal is to maintain minimal output size with maximal code flexibility and execution performaces.
-For now the POC si 2KB not GZip added to the Preact core.
+For now the POC si *2KB not GZip* added to the Preact core.
+This example is *14KB not GZip* with Preact + Prehook + working example.
 
+### Differences
 1. Components are still pure functions.
 2. Components are not re-executed entierly at each render, they return a render function.
 3. Hooks are initialized only at component build time for better performances.
@@ -15,12 +18,24 @@ For now the POC si 2KB not GZip added to the Preact core.
 5. `useState` have a slightly different API. With more functional approach.
 6. Ref's are more usable with solo refs and multi-refs.
 
+### Future
 This is built on typescript for now and will be pre-compiled for npm when (if) ready.
 
 I know that Preact's author is working on a [Hooks implementation](https://twitter.com/_developit/status/1057426596779450368).
 I also know that Preact goal is to mimic React API's so there is no much chances that is POC is used at anytime by anybody, this is just a proposal :)
 
 Thanks !
+
+### Curious ?
+
+If you just want to check implementation with installing :
+Example :
+- https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/App.tsx
+- https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/HookedComponent.tsx
+
+The lib :
+- https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/prehook.ts
+- https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/useRef.ts
 
 
 ## Installation
