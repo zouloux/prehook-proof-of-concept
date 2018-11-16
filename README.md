@@ -17,7 +17,7 @@ This example is **14KB not GZip** with Preact + Prehook + working example.
 I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 
 ### Differences
-1. Components are still pure functions, but they have to phases.
+1. Components are still pure functions, but they have 2 phases : Factory and Render phases.
 2. Components are not re-executed entierly at each render, they return a render function.
 3. Hooks are initialized only at component build time for better performances.
 4. Hooks can be inside conditions as long they are inside component's factory phase.
