@@ -1,3 +1,4 @@
+import './HookedComponent.less'
 import { h } from 'preact';
 import { prehook, useEffect, useState } from '../lib/prehook/prehook'
 import { useRef } from '../lib/prehook/useRef'
@@ -7,13 +8,11 @@ const generateRandomLengthArray = (max = 10) => Array.from({
 	length: Math.random() * max
 })
 
-
+// HookedComponent props
 interface IProps
 {
 	defaultSuperProp	?: number
-
 	onDetach			?: () => void
-
 	color				:number
 }
 
@@ -21,18 +20,34 @@ interface IProps
 export const HookedComponent = prehook <IProps> ( function ( props )
 {
 	/**
+	 * 1. THE FACTORY PHASE
+	 *
 	 * The factory phase only runs once.
 	 * This is different from React's implementation which run this every times
 	 * the component needs to update.
 	 *
-	 * This may be a less functional approach (props never changes here for ex)
+	 * This may be a less functional approach,
 	 * but it seems less "auto-magic" for hooks (they can be in conditions here),
 	 * it does not break HMR and also it should be faster.
+	 *
+	 * Also, this is still available !
+	 * To expose public API, or get component name for example.
 	 */
 	console.log('Factory phase ...', this);
 
 	/**
+	 * 2. ABOUT PROPS
+	 *
+	 * Because this factory phase is ran only once, accessing props changes would
+	 * be impossible. This is why props here is a function which gather props when called.
+	 *
+	 * -> props().color gives the color at any time (not only in factory phase scope !)
+	 */
+
+	/**
+	 * 3. USE STATE
 	 * TODO - Doc about useState != React.useState
+	 * clickState is a function
 	 */
 
 	/**
@@ -41,29 +56,53 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 * Also, this state is an object.
 	 */
 	const clickState = useState({
-		// TODO
+		// Here we get the default value from props
+		// 0 is the default value if defaultSuperProp is not defined.
 		superProp: props().defaultSuperProp || 0
 	});
+
+	/**
+	 * 4. USE EFFECT
+	 *
+	 * Note how useEffect can detect changes on clickState.
+	 * We just pass clickState (which is a function) and useEffect will get
+	 * the check the new value every times the component is rendered.
+	 * This effect will be ran only when clickState changes.
+	 *
+	 * Also, changes are on top to be more readable. Effect implementation can
+	 * be long and clickState will be invisible until we scroll bottom.
+	 *
+	 * First argument is optional and can be collapsed.
+	 */
 	useEffect( [clickState], () =>
 	{
 		console.log('Click update', clickState());
 	});
+
+	/**
+	 * 5. SET STATE
+	 */
 	async function clickStateHandler ( e )
 	{
-		// TODO
+		// We update the state by calling the clickState function.
 		clickState({
+			// We get the state to increment by calling it again but without argument
 			superProp: clickState().superProp + 1
 		})
-		// TODO
+		// clickState is returning a Promise if we use it to change the state !
+		// This is handy to know when the state is really updated
 		.then(
 			() => console.log('After Click')
 		)
 	}
 
+	/**
+	 * 6. EFFECT OPTIMIZATION
+	 */
 
 	/**
 	 * An other state with it's effect to show associated updates
-	 * Also, this is state is a number.
+	 * Also, this is state is a number and not an object.
 	 */
 	const otherState = useState( 5 );
 	useEffect( [otherState], () =>
@@ -72,57 +111,80 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	});
 	function clickOtherHandler ( e )
 	{
-		// TODO
-		otherState(
-			otherState() - 1
-		);
+		// Here we quickly increment the state by getting then setting
+		otherState( otherState() - 1 );
 	}
 
+	/**
+	 * 7. SUBSCRIBE / UNSUBSCRIBE & EVERY RENDER EFFECT
+	 */
 
 	/**
-	 * Here is an example of subscribe type of hook.
+	 * Here is an example of subscribe effect type of hook.
 	 *
 	 * In this configuration
-	 * - subscribe is called after each render.
-	 * - unsubscribe is called before every subscribe call but the first
 	 */
-	/*
-	useEffect( () =>
+	useEffect( false, () =>
 	{
-		// Here we can subscribe to any model or external event / signal
-		console.log('Subscribe effect', props());
+		function resizeHandler ()
+		{
+			console.log('Subscribe effect // Window size changed', window.innerWidth)
+		}
 
+		// Here we can subscribe to any model or external event / signal
+		console.log('Subscribe effect // Start listening to resize events.')
+		window.addEventListener('resize', resizeHandler);
+
+		// When component is destroyed, we stop listening to resizes
 		return () =>
 		{
-			// And here we unsubscribe.
-			console.log('Unsubscribe effect');
+			console.log('Subscribe effect // Stop listening to resize events.')
+			window.removeEventListener('resize', resizeHandler);
 		}
 	})
-	*/
-
 
 	/**
-	 * TODO DOC
+	 * Effect hook called after every renders.
+	 * - First function is called after each render.
+	 * - Second function is called before every subscribe call but the first
 	 */
-	/*
+	useEffect( () =>
+	{
+		console.log('Every render effect // Mount and update', props());
+		return () => console.log('Every render effect // Unmount')
+	})
+
+	/**
+	 * 8. LIFECYCLE EFFECT
+	 *
+	 * This can be useful if you do not need the scoped effect or if you need
+	 * more specific usage of mount vs update.
+	 * All handlers are optional so this is flexible.
+	 */
 	useEffect({
 		mount: () => {
-			console.log('Custom effect mount')
+			console.log('Lifecycle effect // Mount')
 		},
 		update: () => {
-			console.log('Custom effect update')
+			console.log('Lifecycle effect // Update')
 		},
 		unmount: () => {
-			console.log('Custom effect unmount')
+			console.log('Lifecycle effect // Unmount')
 		}
 	})
-	*/
-
 
 	/**
-	 * TODO DOC
+	 * 9. USE REF (SINGLE)
+	 *
+	 * Here we declare a ref to target a single DOM Element / Preact component
+	 * in the returned render function bellow.
 	 */
 	const colorRef = useRef();
+
+	/**
+	 * 9. PROPS CHANGES AND EFFECTS
+	 * TODO DOC
+	 */
 	useEffect( [ props('color') ], () =>
 	{
 		console.log('Color props updated to', props().color);
@@ -130,7 +192,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	});
 
 	/**
-	 * TODO : Doc
+	 * 10. USE REFS (MULTIPLE)
 	 */
 
 	// Create a state to create a fake list with changing length
@@ -143,6 +205,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	// Only when the list is changing
 	useEffect( [listItemStates], () =>
 	{
+		// Here the returning value is an array of Element (or Component) !
 		console.log( 'List item refs :', listMultiRef() );
 	});
 
@@ -152,22 +215,24 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 		listItemStates( generateRandomLengthArray() )
 	}
 
-
-
 	/**
+	 * 11. RENDER
+	 *
 	 * Here is the returned render function.
 	 * In react, we return DOM directly. This is an important difference and
 	 * if allow us to declare factory phase once and render phase several times.
 	 */
 	return () => (
 		console.log('Render phase ...'),
-		<div>
+		<div class={ this.displayName }>
+			<h2>Hooked Component</h2>
+
 			{/* Show color from props  */}
+			<p>Color from props :</p>
 			<div
+				class="HookedComponent_color"
 				style={{
-					background: props().color,
-					width: 100,
-					height: 30
+					background: props().color
 				}}
 				children={ props().color }
 
@@ -176,16 +241,37 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 				key={ props().color }
 				ref={ colorRef }
 			/>
+			<hr/>
 
 			{/* Test of an object state to check updates */}
 			<h3>Click state</h3>
 			<p>Value : { clickState().superProp }</p>
 			<button onClick={ clickStateHandler }>Click me</button>
+			<hr/>
 
 			{/* Test of another state to check updates */}
 			<h3>Other state</h3>
 			<p>Value : { otherState() }</p>
 			<button onClick={ clickOtherHandler }>Click me</button>
+			<hr/>
+
+			{/* Test of multi-refs */}
+			<h3>List refs</h3>
+			<p>This part shows how we can multi-ref DOM elements (or components).</p>
+			<button onClick={ clickListRefsHandler }>Update number of items</button>
+			<ul>
+				{/* Browse and build all list items from listItemStates array */}
+				{ listItemStates().map( (el, i) =>
+					<li ref={ listMultiRef(i) }>
+						List item {i}
+					</li>
+				)}
+			</ul>
+			<hr/>
+
+			{/* Here we add children from props */}
+			<h4>{ props().children }</h4>
+			<hr/>
 
 			{/* Test of props callback and detach events */}
 			<h3>Callback</h3>
@@ -194,27 +280,11 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 				<br/>This is meant to test detach effects.
 			</p>
 			<button onClick={ props().onDetach }>Detach this component</button>
-
-			{/* Test of multi-refs */}
-			<h3>List refs</h3>
-			<p>This part shows how we can multi-ref DOM elements (or components).</p>
-			<button onClick={ clickListRefsHandler }>Update number of items</button>
-			<ul>
-				{/* Browse and build all list items from listItemStates array */}
-				{
-					listItemStates()
-					.map( (el, i) =>
-						<li ref={ listMultiRef(i) }>
-							List item {i}
-						</li>
-					)
-				}
-			</ul>
-
-			{/* Here we add children from props */}
-			<h4>{ props().children }</h4>
 		</div>
 	)
 
-	// TODO - Doc
+	// We pass the node's __filename so the prehook function know how to name
+	// the component. (it will parse the file name.)
+	// Then the filename is available in this (which is the component's instance
+	// as this.displayName. Which can be useful for automatic DOM class names.
 }, __filename);

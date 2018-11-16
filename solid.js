@@ -3,20 +3,21 @@
  */
 
 
-// Check node_modules and npm i
+// TODO Check node_modules and npm i
 
 const Bundler   = require('parcel-bundler');
 const Path      = require('path');
 const { Files } = require('@zouloux/files');
+const { spawn } = require('child_process');
+const Logger 	= require('parcel-bundler/lib/Logger');
 
-const production = (
-	process.argv[ 2 ] === 'production'
-);
 
+
+const production = ( process.argv[ 2 ] === 'production' );
 process.env.NODE_ENV = production ? 'production' : 'dev';
+console.log(production ? 'Compiling for production ...' : 'Dev mode ...');
 
-console.log(production ? 'Compiling for production ...' : 'Dev mode');
-
+// Remove all dist files
 Files.setVerbose( false );
 Files.getFolders('./dist/').remove();
 
@@ -60,10 +61,6 @@ const options = {
 								// si le mode watch est désactivé
 };
 
-const { spawn } = require('child_process');
-
-const Logger = require('parcel-bundler/lib/Logger');
-
 let currentTscProcess;
 
 const showProcessOutput = (process) =>
@@ -75,6 +72,33 @@ const showProcessOutput = (process) =>
 	stderr !== '' && Logger.log( stderr );
 }
 
+const checkTypescript = () =>
+{
+	if ( currentTscProcess )
+	{
+		currentTscProcess.kill();
+	}
+
+	Logger.progress(' Checking typescript ...');
+
+	currentTscProcess = spawn('./node_modules/typescript/bin/tsc', [ '--noEmit', '--pretty' ], {
+		//detached : true,
+	});
+
+	currentTscProcess.once('exit', (code) =>
+	{
+		Logger.stopSpinner();
+		Logger.clear();
+
+		showProcessOutput( currentTscProcess );
+
+		if ( code === 0 )
+		{
+			Logger.log('👌  ' + Logger.chalk.green.bold(`Typescript validated.`) );
+		}
+	});
+}
+
 
 async function runBundle ()
 {
@@ -83,30 +107,7 @@ async function runBundle ()
 
 	bundler.on('bundled', ( bundle ) =>
 	{
-		if ( currentTscProcess )
-		{
-			currentTscProcess.kill();
-		}
-
-		Logger.progress(' Checking typescript ...');
-
-		currentTscProcess = spawn('./node_modules/typescript/bin/tsc', [ '--noEmit', '--pretty' ], {
-			//detached : true,
-		});
-
-		currentTscProcess.once('exit', (code) =>
-		{
-			Logger.stopSpinner();
-			Logger.clear();
-
-			showProcessOutput( currentTscProcess );
-
-			if ( code === 0 )
-			{
-				Logger.log('👌  ' + Logger.chalk.green.bold(`Typescript validated.`) );
-			}
-		});
-
+		this.checkTypescript();
 		// TODO -> less check ?
 	});
 

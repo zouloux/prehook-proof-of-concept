@@ -5,7 +5,7 @@ import { shallowDiffers } from "./shallowDiffers";
 // The current hooked component.
 // This is only set when a component is in factory phase
 // Hooks are beeing declared.
-let currentHookedComponent:any;
+let hookedComponent:any;
 
 /**
  * Get the current hooked component.
@@ -20,11 +20,11 @@ export function getHookedComponent ()
 	// Only on dev to exclude this code from production builds
 	if ( process.env.NODE_ENV !== 'production' )
 	{
-		( currentHookedComponent == null )
+		( hookedComponent == null )
 		&&
 		console.error(`Prehook error // A hook is being used outside of a component's factory phase.`);
 	}
-	return currentHookedComponent;
+	return hookedComponent;
 }
 
 
@@ -129,7 +129,7 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 		// Set current hook as this component
 		// All hook declared in the next factory will be added to this hook
 		// No other components can be created at the same time so it should be ok
-		currentHookedComponent = this;
+		hookedComponent = this;
 
 		// Here we call our component factory function
 		// with current scope and arguments.
@@ -138,7 +138,7 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 
 		// Remove current hooked component reference
 		// now we are done with this factory
-		currentHookedComponent = null;
+		hookedComponent = null;
 
 
 		/**
@@ -209,10 +209,11 @@ type IStates = ( (...rest) => any )[];
  * @param statesOrEffect
  * @param mountHandler
  */
-export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect), mountHandler ?: IMountHandler )
+export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect | boolean), mountHandler ?: IMountHandler )
 {
 	// Get current component and keep its ref in this scope
 	const component = getHookedComponent();
+
 
 	// Get type of first argument to detect how to add our effect
 	const typeofFirst = typeof statesOrEffect;
@@ -244,6 +245,15 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect)
 	// Function which calls mount and get unmountHandler as a return
 	const mount = () => unmountHandler = mountHandler() || null;
 
+	// If first argument is a false
+	if ( typeofFirst === 'boolean' && !typeofFirst )
+	{
+		// This is a subscribe effect.
+		// Only mount and unmount will be called, update will never fire.
+		component.addEffect({ mount, unmount });
+		return;
+	}
+
 	// Function which update states values to check differs
 	const updateStates = () => states.map( state => state() );
 
@@ -257,9 +267,11 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect)
 	// Add an effect to the component
 	component.addEffect({
 
+		// We add mount and unmount functions
 		mount,
 		unmount,
 
+		// Update function will check state changes
 		update : () =>
 		{
 			// If we have states changes to check

@@ -1,3 +1,4 @@
+import "./App.less"
 import {h} from 'preact'
 import { HookedComponent } from "./HookedComponent";
 import { prehook, useState } from '../lib/prehook/prehook'
@@ -30,30 +31,39 @@ export const App = prehook <IProps> ( function ( props )
 	// Here we return the render function, not that this is different from
 	// React approach, we will see why inside HookedComponent.
 	return () => (
-		<div>
+		<div class="App">
 			<h1>Hello Prehook 🚀</h1>
 
-			{/* This button will update colorState when clicked */}
-			<button onClick={ e => colorState( getRandomColor() ) }>
-				Change color
-			</button>
-
-			{/* Add HookedComponent into DOM if our state is true */}
 			{
-				// Not that state gathering is done by calling without argument
+				/* State value is gathered by calling state without argument */
 				isHookedComponentVisible()
-				&&
-				<HookedComponent
-					defaultSuperProp={ defaultSuperProp }
-					color={ colorState() }
-					onDetach={ () => isHookedComponentVisible( false ) }
-				>
-					{/* Here we add a dynamic child with the children property */}
-					<div>Child from App !</div>
-				</HookedComponent>
+
+				? <div>
+
+					{/* This button will update colorState when clicked */}
+					<h3>Props with hooked components</h3>
+					<p>This example will show update cycle when updating props of an hooked component.</p>
+					<button onClick={ e => colorState( getRandomColor() ) }>
+						Change color on HookedComponent
+					</button>
+
+					{/* Add HookedComponent into DOM if our state is true */}
+					<HookedComponent
+						defaultSuperProp={ defaultSuperProp }
+						color={ colorState() }
+						onDetach={ () => isHookedComponentVisible( false ) }
+					>
+						{/* Here we add a dynamic child with the children property */}
+						<div>Child from App !</div>
+					</HookedComponent>
+				</div>
+
+				/* We show a button to re-attach the component as a new instance */
+				: <button
+					onClick={ e => isHookedComponentVisible( true ) }
+					children="Re-attach a new instance of HookedComponent"
+				/>
 			}
 		</div>
 	)
 });
-
-
