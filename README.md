@@ -2,7 +2,7 @@
 This is a proof of concept of a [React Hooks](https://reactjs.org/docs/hooks-reference.html) like implementation for [Preact](https://preactjs.com/).
 
 ## Important !
-This is an early Proof of concept for a Hook implementation, *a bit different than the React approach*.
+This is an early Proof of concept for a Hook implementation, **a bit different than the React approach**.
 I'm still working on it to have better examples.
 
 ### Goal and motivation
@@ -12,8 +12,8 @@ React as a solution for patching performances with `useMemoization` and `useCall
 3. Also, the "don't use hooks in conditions" is a problem to me. It shows that there is to much "auto-magic" stuff going on under the hood. Which is not aviced when you dive into a new lib / way of thinking. People need to understands how it works so it's not frustrating. And to me, linters should not be mandatory to use a lib, syntax have to be expressive and clear.
 
 ### Size
-For now the POC is *2KB not GZip* added to the Preact core with `useState`, `useEffect` and better `useRef`.
-This example is *14KB not GZip* with Preact + Prehook + working example.
+For now the POC is **2KB not GZip** added to the Preact core with `useState`, `useEffect` and better `useRef`.
+This example is **14KB not GZip** with Preact + Prehook + working example.
 I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 
 ### Differences
