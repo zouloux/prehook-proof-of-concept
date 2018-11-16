@@ -13,7 +13,7 @@ React as a solution for patching performances with `useMemoization` and `useCall
 
 ### Size
 For now the POC is **2KB not GZip** added to the Preact core with `useState`, `useEffect` and better `useRef`.
-This example is **14KB not GZip** with Preact + Prehook + working example.
+This example is **15KB not GZip** with Preact + Prehook + working example.
 I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 
 ### Differences

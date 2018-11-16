@@ -107,7 +107,9 @@ async function runBundle ()
 
 	bundler.on('bundled', ( bundle ) =>
 	{
-		this.checkTypescript();
+		checkTypescript();
+
+		// TODO -> Checks before build on production
 		// TODO -> less check ?
 	});
 
