@@ -35,7 +35,7 @@ Thanks !
 
 ### Curious ?
 
-If you just want to check implementation with installing :
+If you just want to check implementation without installing :
 Example :
 - [App.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/App.tsx)
 - [HookedComponent.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/HookedComponent.tsx)
