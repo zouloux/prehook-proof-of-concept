@@ -48,7 +48,7 @@ The lib :
 - `npm i`
 
 ### Dev mode
-Will watch files and check Typescript definitions.
+Will watch files and check Typescript.
 - `node solid` or `npm run dev`
 
 ### Build for production
