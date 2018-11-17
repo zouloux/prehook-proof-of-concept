@@ -1,6 +1,8 @@
+import { getHookedComponent } from "./prehook";
 
 /**
- * TODO : Doc
+ * TODO : DOC
+ * TODO : Type
  */
 export function useRef ()
 {
@@ -12,11 +14,24 @@ export function useRef ()
 	// Otherwise, myRef() will return the ref of targeted element
 	let multi = false;
 
+	// Quickly add an effect on the current hooked component
+	// This will help us to know when the component is unmount.
+	getHookedComponent().addEffect({
+		unmount: () =>
+		{
+			// Kill nodes array so
+			nodes = null;
+		}
+	});
+
 	// We return a ref function.
 	// The first argument is the ref given by Preact or the key of the multi ref
 	// If no argument is given or null, the node or nodes will be returned.
 	return function ( r ?: any )
 	{
+		// Do not continue if component has be unmount
+		if (!nodes) return;
+
 		// Get type of argument to know if we are in single / multi / getter mode
 		const typeofFirst = typeof r;
 
@@ -30,6 +45,9 @@ export function useRef ()
 			// First argument is mandatory here because this is used by Preact only
 			return function ( rr:any )
 			{
+				// Do not continue if component has be unmount
+				if (!nodes) return;
+
 				// If the ref is null
 				// Preact is removing this item for the current key
 				if ( rr == null )

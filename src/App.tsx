@@ -54,7 +54,7 @@ export const App = prehook <IProps> ( function ( props )
 						onDetach={ () => isHookedComponentVisible( false ) }
 					>
 						{/* Here we add a dynamic child with the children property */}
-						<div>Child from App !</div>
+						<div>Child from App</div>
 					</HookedComponent>
 				</div>
 

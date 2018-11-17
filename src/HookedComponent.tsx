@@ -6,7 +6,7 @@ import { useRef } from '../lib/prehook/useRef'
 // A quick utils to generate a an array of a random length
 const generateRandomLengthArray = (max = 10) => Array.from({
 	length: Math.random() * max
-})
+});
 
 // HookedComponent props
 interface IProps
@@ -46,8 +46,11 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 
 	/**
 	 * 3. USE STATE
-	 * TODO - Doc about useState != React.useState
-	 * clickState is a function
+	 *
+	 * React useState return a tuple. Here we return only a function which will
+	 * act as a getter and a setter of the state. So we carry only one ref.
+	 * Also, this ref is a function because this allow us to compute the
+	 * Factory phase only once.
 	 */
 
 	/**
@@ -74,10 +77,10 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 *
 	 * First argument is optional and can be collapsed.
 	 */
-	useEffect( [clickState], () =>
-	{
-		console.log('Click update', clickState());
-	});
+	// useEffect( [clickState], () =>
+	// {
+	// 	console.log('Click update', clickState());
+	// });
 
 	/**
 	 * 5. SET STATE
@@ -105,10 +108,10 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 * Also, this is state is a number and not an object.
 	 */
 	const otherState = useState( 5 );
-	useEffect( [otherState], () =>
-	{
-		console.log('Other update', otherState());
-	});
+	// useEffect( [otherState], () =>
+	// {
+	// 	console.log('Other update', otherState());
+	// });
 	function clickOtherHandler ( e )
 	{
 		// Here we quickly increment the state by getting then setting
@@ -121,8 +124,13 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 
 	/**
 	 * Here is an example of subscribe effect type of hook.
+	 * The goal is to subscribe to an event / signal / model when the component
+	 * is mount, and to unsubscribe when unmount. Component state and props
+	 * do not change this behavior.
+	 * We activate it by passing false as the first argument here.
 	 *
-	 * In this configuration
+	 * - First function is called after component is mount and first rendered.
+	 * - Second function is called when component is unmount.
 	 */
 	useEffect( false, () =>
 	{
@@ -130,29 +138,31 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 		{
 			console.log('Subscribe effect // Window size changed', window.innerWidth)
 		}
+		console.log('USE SUBSCRIBE EFFECT');
 
 		// Here we can subscribe to any model or external event / signal
-		console.log('Subscribe effect // Start listening to resize events.')
+		console.log('Subscribe effect // Start listening to resize events.');
 		window.addEventListener('resize', resizeHandler);
 
 		// When component is destroyed, we stop listening to resizes
 		return () =>
 		{
-			console.log('Subscribe effect // Stop listening to resize events.')
+			console.log('USE UNSUBSCRIBE EFFECT');
+			console.log('Subscribe effect // Stop listening to resize events.');
 			window.removeEventListener('resize', resizeHandler);
 		}
-	})
+	});
 
 	/**
 	 * Effect hook called after every renders.
 	 * - First function is called after each render.
-	 * - Second function is called before every subscribe call but the first
+	 * - Second function is called before every subscribe call but the first.
 	 */
-	useEffect( () =>
-	{
-		console.log('Every render effect // Mount and update', props());
-		return () => console.log('Every render effect // Unmount')
-	})
+	// useEffect( () =>
+	// {
+	// 	console.log('Every render effect // Mount and update');
+	// 	return () => console.log('Every render effect // Unmount');
+	// });
 
 	/**
 	 * 8. LIFECYCLE EFFECT
@@ -161,17 +171,17 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 * more specific usage of mount vs update.
 	 * All handlers are optional so this is flexible.
 	 */
-	useEffect({
-		mount: () => {
-			console.log('Lifecycle effect // Mount')
-		},
-		update: () => {
-			console.log('Lifecycle effect // Update')
-		},
-		unmount: () => {
-			console.log('Lifecycle effect // Unmount')
-		}
-	})
+	// useEffect({
+	// 	mount: () => {
+	// 		console.log('Lifecycle effect // Mount')
+	// 	},
+	// 	update: () => {
+	// 		console.log('Lifecycle effect // Update')
+	// 	},
+	// 	unmount: () => {
+	// 		console.log('Lifecycle effect // Unmount')
+	// 	}
+	// });
 
 	/**
 	 * 9. USE REF (SINGLE)
@@ -183,13 +193,16 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 
 	/**
 	 * 9. PROPS CHANGES AND EFFECTS
-	 * TODO DOC
+	 *
+	 * We call props('color') to create a function which return the current
+	 * color prop value. So this will be managed as a state() function.
+	 * This effect will fire only when the color prop will change.
 	 */
-	useEffect( [ props('color') ], () =>
-	{
-		console.log('Color props updated to', props().color);
-		console.log('Ref to color div :', colorRef())
-	});
+	// useEffect( [ props('color') ], () =>
+	// {
+	// 	console.log('Color props updated to', props().color);
+	// 	console.log('Ref to color div :', colorRef())
+	// });
 
 	/**
 	 * 10. USE REFS (MULTIPLE)
@@ -203,11 +216,11 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 
 	// Here we show all list refs
 	// Only when the list is changing
-	useEffect( [listItemStates], () =>
-	{
-		// Here the returning value is an array of Element (or Component) !
-		console.log( 'List item refs :', listMultiRef() );
-	});
+	// useEffect( [listItemStates], () =>
+	// {
+	// 	// Here the returning value is an array of Element (or Component) !
+	// 	console.log( 'List item refs :', listMultiRef() );
+	// });
 
 	function clickListRefsHandler ()
 	{
@@ -263,7 +276,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 				{/* Browse and build all list items from listItemStates array */}
 				{ listItemStates().map( (el, i) =>
 					<li ref={ listMultiRef(i) }>
-						List item {i}
+						Item n°{i}
 					</li>
 				)}
 			</ul>

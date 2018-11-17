@@ -1,11 +1,20 @@
 import { shallowDiffers } from "./shallowDiffers";
+import {Component} from "preact";
+
 
 // ----------------------------------------------------------------------------- HOOKED COMPONENT
+
+// TODO
+interface IHookedComponent extends Component
+{
+	addEffect( effect:IEffect );
+}
+
 
 // The current hooked component.
 // This is only set when a component is in factory phase
 // Hooks are beeing declared.
-let hookedComponent:any;
+let hookedComponent:IHookedComponent;
 
 /**
  * Get the current hooked component.
@@ -52,9 +61,6 @@ type IFactory <GProps> = (props:IGetProps<GProps>) => (() => any);
  */
 export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: string)
 {
-	// List of effects associated to this component instance
-	const effects:IEffect[] = [];
-
 	// Parse name from Node's __filename
 	let name = 'Component';
 	if ( fileName != null )
@@ -67,6 +73,9 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 	// Not as a class which extends Component
 	function Component (props, context) // FIXME- Do we keep context ?
 	{
+		// List of effects associated to this component instance
+		let effects:IEffect[] = [];
+
 		/**
 		 * Name
 		 */
@@ -75,7 +84,7 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 		this.displayName = name;
 
 		// Show this component as string
-		this.toString = () => `<${ name } ... />`
+		this.toString = () => `<${ name } ... />`;
 
 
 		/**
@@ -86,25 +95,25 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 		this.componentDidMount = () => (
 			// Call mount or update method on all effects
 			effects.forEach( e => e.mount && e.mount() )
-		)
+		);
 
 		// When component is updated by props or state
 		this.componentDidUpdate = () => (
 			// Call update method on all effects
 			effects.forEach( e => e.update && e.update() )
-		)
+		);
 
 		// When component will be removed by Preact
 		this.componentWillUnmount = () => (
 			// Call unmount method on all effects
 			effects.forEach( e => e.unmount && e.unmount() )
-		)
+		);
 
 		// Do a shallow differs detection to allow changes only when
 		// props or states changes. This will prevent render and save CPU cycles.
 		this.shouldComponentUpdate = ( nextProps ) => (
 			shallowDiffers( this.props, nextProps )
-		)
+		);
 
 
 		/**
@@ -116,7 +125,7 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 			( propName != null )
 			? () => getProps()[ propName ]
 			: ( this.props || props )
-		)
+		);
 
 
 		/**
@@ -124,7 +133,7 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 		 */
 
 		// Add an effect to this component instance
-		this.addEffect = ( effect:IEffect ) => effects.push( effect )
+		this.addEffect = ( effect:IEffect ) => effects.push( effect );
 
 		// Set current hook as this component
 		// All hook declared in the next factory will be added to this hook
@@ -149,7 +158,6 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 		// And preact won't call render() for this time.
 		return this.render.apply( this );
 	}
-
 
 	// Set name on functional component
 	Object.defineProperty(Component, 'name', { value: name });
@@ -246,8 +254,10 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect 
 	const mount = () => unmountHandler = mountHandler() || null;
 
 	// If first argument is a false
-	if ( typeofFirst === 'boolean' && !typeofFirst )
+	if ( typeofFirst === 'boolean' && !statesOrEffect )
 	{
+		console.log( 'Effect false' );
+
 		// This is a subscribe effect.
 		// Only mount and unmount will be called, update will never fire.
 		component.addEffect({ mount, unmount });
