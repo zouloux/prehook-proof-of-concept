@@ -222,7 +222,6 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect 
 	// Get current component and keep its ref in this scope
 	const component = getHookedComponent();
 
-
 	// Get type of first argument to detect how to add our effect
 	const typeofFirst = typeof statesOrEffect;
 	const isArrayFirst = Array.isArray( statesOrEffect );
@@ -253,11 +252,12 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect 
 	// Function which calls mount and get unmountHandler as a return
 	const mount = () => unmountHandler = mountHandler() || null;
 
-	// If first argument is a false
-	if ( typeofFirst === 'boolean' && !statesOrEffect )
-	{
-		console.log( 'Effect false' );
-
+	if (
+		// If first argument is a false
+		( typeofFirst === 'boolean' && !statesOrEffect )
+		// or if first argument is an empty array
+		|| ( isArrayFirst && (statesOrEffect as IStates).length == 0 )
+	) {
 		// This is a subscribe effect.
 		// Only mount and unmount will be called, update will never fire.
 		component.addEffect({ mount, unmount });

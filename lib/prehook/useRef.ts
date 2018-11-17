@@ -19,7 +19,7 @@ export function useRef ()
 	getHookedComponent().addEffect({
 		unmount: () =>
 		{
-			// Kill nodes array so
+			// Kill nodes array so returned functions are annihilated
 			nodes = null;
 		}
 	});

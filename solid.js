@@ -8,7 +8,9 @@ const { spawn, spawnSync } = require('child_process');
 // Install node modules if needed
 if ( !fs.existsSync('node_modules') )
 {
+	console.log('🕓  Installing node modules ...');
 	spawnSync('npm', ['i'], {
+		// FIXME : Does not works ?
 		stdio: "pipe"
 	});
 }
@@ -21,7 +23,7 @@ const Logger 	= require('parcel-bundler/lib/Logger');
 // Production or dev mode
 const production = ( process.argv[ 2 ] === 'production' );
 process.env.NODE_ENV = production ? 'production' : 'dev';
-console.log(production ? 'Compiling for production ...' : 'Dev mode ...');
+console.log(production ? '🚀  Building for production' : '🤖  Development mode');
 
 // Remove all dist files before each build
 Files.setVerbose( false );
