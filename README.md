@@ -33,7 +33,27 @@ I also know that Preact goal is to mimic React API's so there is no much chances
 
 Thanks !
 
+## Some examples
+
+The more important aspect of the lib, is the Factory phase and Render phase.
+Factory phase scope leak through all the component, but is called once.
+![Prehook Factory Render Example](img/1-prehook-factory-render.png)
+
+States differences.
+![Prehook Use State Example](img/2-prehook-use-state.png)
+
+Use effect example.
+![Prehook Use Effect Simple Example](img/3-prehook-use-effect-simple.png)
+
+Use effect with optimized state example.
+![Prehook Use Effect and Use StateExample](img/4-prehook-use-effect-use-state.png)
+
+*More example to come ...*
+
+
 ### Curious ?
+
+- [See it in action !](https://solid-js.github.io/prehook-proof-of-concept/)
 
 If you just want to check implementation without installing :
 Example :
@@ -44,9 +64,9 @@ The lib :
 - [prehook.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/prehook.ts)
 - [useRef.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/useRef.ts)
 
-## Installation
 
-- `npm i`
+
+## Installation
 
 ### Dev mode
 Will watch files and check Typescript.

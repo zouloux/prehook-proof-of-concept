@@ -33,6 +33,7 @@ export const App = prehook <IProps> ( function ( props )
 	return () => (
 		<div class="App">
 			<h1>Hello Prehook 🚀</h1>
+			<p>Open dev console and check source code to know more.</p>
 
 			{
 				/* State value is gathered by calling state without argument */
