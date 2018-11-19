@@ -25,6 +25,9 @@ I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 6. Ref's are more usable with solo refs and multi-refs.
 7. `useEffect` update condition are on top of the declaration, before implementation. Small diff but cleaner and more readable code.
 
+No need for React's [useMemo](https://reactjs.org/docs/hooks-reference.html#usememo) and [useCallback](https://reactjs.org/docs/hooks-reference.html#usecallback) for example.
+Which help keep our apps **fast and simple**.
+
 ### Future
 This is built on typescript for now and will be pre-compiled for npm when (if) ready.
 
@@ -37,16 +40,16 @@ Thanks !
 
 The more important aspect of the lib, is the Factory phase and Render phase.
 Factory phase scope leak through all the component, but is called once.
-![Prehook Factory Render Example](img/1-prehook-factory-render.png)
+![Prehook Factory Render Example](img/1-prehook-factory-render.png | 400x)
 
 States differences.
-![Prehook Use State Example](img/2-prehook-use-state.png)
+![Prehook Use State Example](img/2-prehook-use-state.png | 400x)
 
 Use effect example.
-![Prehook Use Effect Simple Example](img/3-prehook-use-effect-simple.png)
+![Prehook Use Effect Simple Example](img/3-prehook-use-effect-simple.png | 400x)
 
 Use effect with optimized state example.
-![Prehook Use Effect and Use StateExample](img/4-prehook-use-effect-use-state.png)
+![Prehook Use Effect and Use StateExample](img/4-prehook-use-effect-use-state.png | 400x)
 
 *More example to come ...*
 
