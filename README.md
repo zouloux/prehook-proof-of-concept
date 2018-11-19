@@ -40,7 +40,7 @@ Thanks !
 
 The more important aspect of the lib, is the Factory phase and Render phase.
 Factory phase scope leak through all the component, but is called once.
-![Prehook Factory Render Example](img/1-prehook-factory-render.png | 400x)
+![Prehook Factory Render Example](img/1-prehook-factory-render.png)
 
 States differences.
 ![Prehook Use State Example](img/2-prehook-use-state.png)
