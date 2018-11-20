@@ -169,8 +169,12 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 
 // ----------------------------------------------------------------------------- USE STATE
 
-// TODO : DOC
-export type IUsedState <T> = ( value ?: T ) => T | Promise<any> | any
+interface IUsedState <T>
+{
+	( value ?: T ) : ( T | Promise<any> )
+
+	value : T
+}
 
 
 /**
@@ -183,18 +187,37 @@ export function useState <T> ( state:T ) : IUsedState<T>
 	const component = getHookedComponent();
 
 	// Return a function which is getter and setter
-	return function ( value ?: T )
+	const stateFactory = function ( value ?: T )
 	{
 		// Just return state if there is no new state to set
-		if ( value == null ) return state;
+		if ( value == null ) return stateFactory.value;
 
-		// Set new state from first argument
-		state = value;
+		// Save state value as a prop of the used state
+		// Storing it on the function will hold the value for this state
+		stateFactory.value = state;
 
 		// Update component and return when complete as a promise
 		return new Promise(
 			resolve => component.forceUpdate( resolve )
 		)
+	}
+
+	// Set value for first time (before state is ever used)
+	stateFactory.value = state;
+
+	// Return state factory
+	return stateFactory;
+}
+
+
+// ----------------------------------------------------------------------------- EXPOSE STATE
+
+// TODO : DOC
+export function exposeState <T> ( state : IUsedState<T> )
+{
+	return function ( pProp : keyof T )
+	{
+		return state.value[ pProp ];
 	}
 }
 

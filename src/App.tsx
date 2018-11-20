@@ -2,6 +2,9 @@ import "./App.less"
 import {h} from 'preact'
 import { HookedComponent } from "./HookedComponent";
 import { prehook, useState } from '../lib/prehook/prehook'
+import { CustomHookedComponentProposal1 } from './customHooks/CustomHookedComponentProposal1'
+import { CustomHookedComponentProposal2 } from './customHooks/CustomHookedComponentProposal2'
+import { CustomHookedComponentProposal4 } from './customHooks/CustomHookedComponentProposal4'
 
 // Quick function to generate a random hex color code
 const getRandomColor = () => '#' + Math.floor( Math.random() * 16777215 ).toString( 16 );
@@ -55,7 +58,10 @@ export const App = prehook <IProps> ( function ( props )
 						onDetach={ () => isHookedComponentVisible( false ) }
 					>
 						{/* Here we add a dynamic child with the children property */}
-						<div>Child from App</div>
+						{/*<CustomHookedComponentProposal1 />
+						<hr />
+						<CustomHookedComponentProposal2 />*/}
+						<CustomHookedComponentProposal4 />
 					</HookedComponent>
 				</div>
 
@@ -65,6 +71,7 @@ export const App = prehook <IProps> ( function ( props )
 					children="Re-attach a new instance of HookedComponent"
 				/>
 			}
+
 		</div>
 	)
 });

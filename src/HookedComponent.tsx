@@ -284,7 +284,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 			<hr/>
 
 			{/* Here we add children from props */}
-			<h4>{ props().children }</h4>
+			{ props().children }
 			<hr/>
 
 			{/* Test of props callback and detach events */}
