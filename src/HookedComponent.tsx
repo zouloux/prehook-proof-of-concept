@@ -14,6 +14,7 @@ interface IProps
 	defaultSuperProp	?: number
 	onDetach			?: () => void
 	color				:number
+	children			?:any
 }
 
 
@@ -41,7 +42,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 * Because this factory phase is ran only once, accessing props changes would
 	 * be impossible. This is why props here is a function which gather props when called.
 	 *
-	 * -> props().color gives the color at any time (not only in factory phase scope !)
+	 * -> props.value.color gives the color at any time (not only in factory phase scope !)
 	 */
 
 	/**
@@ -61,7 +62,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	const clickState = useState({
 		// Here we get the default value from props
 		// 0 is the default value if defaultSuperProp is not defined.
-		superProp: props().defaultSuperProp || 0
+		superProp: props.value.defaultSuperProp || 0
 	});
 
 	/**
@@ -79,7 +80,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 */
 	useEffect( [clickState], () =>
 	{
-		console.log('Click state update', clickState());
+		console.log('Click state update', clickState.value);
 	});
 
 	/**
@@ -90,13 +91,12 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 		// We update the state by calling the clickState function.
 		clickState({
 			// We get the state to increment by calling it again but without argument
-			superProp: clickState().superProp + 1
+			superProp: clickState.value.superProp + 1
 		})
 		// clickState is returning a Promise if we use it to change the state !
 		// This is handy to know when the state is really updated
 		.then(
-			// Uncomment to test it
-			//() => console.log('After click')
+			() => console.log('After click')
 		)
 	}
 
@@ -116,7 +116,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	function clickOtherHandler ( e )
 	{
 		// Here we quickly increment the state by getting then setting
-		otherState( otherState() - 1 );
+		otherState( otherState.value - 1 );
 	}
 
 	/**
@@ -201,7 +201,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 	 */
 	useEffect( [ props('color') ], () =>
 	{
-		console.log('Color props updated to', props().color);
+		console.log('Color props updated to', props.value.color);
 		console.log('Ref to color div :', colorRef())
 	});
 
@@ -246,20 +246,20 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 			<div
 				class="HookedComponent_color"
 				style={{
-					background: props().color
+					background: props.value.color
 				}}
-				children={ props().color }
+				children={ props.value.color }
 
 				// Here we re-build the component each time our color is changing
 				// we store the ref through the declared colorRef
-				key={ props().color }
+				key={ props.value.color }
 				ref={ colorRef }
 			/>
 			<hr/>
 
 			{/* Test of an object state to check updates */}
 			<h3>Click state</h3>
-			<p>Value : { clickState().superProp }</p>
+			<p>Value : { clickState.value.superProp }</p>
 			<button onClick={ clickStateHandler }>Click me</button>
 			<hr/>
 
@@ -284,7 +284,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 			<hr/>
 
 			{/* Here we add children from props */}
-			{ props().children }
+			{ props.value.children }
 			<hr/>
 
 			{/* Test of props callback and detach events */}
@@ -293,7 +293,7 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 				This will remove this component from the DOM by calling a prop callback.
 				<br/>This is meant to test detach effects.
 			</p>
-			<button onClick={ props().onDetach }>Detach this component</button>
+			<button onClick={ props.value.onDetach }>Detach this component</button>
 		</div>
 	)
 

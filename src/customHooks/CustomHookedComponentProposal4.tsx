@@ -1,13 +1,38 @@
 import { h } from 'preact';
-import { useWindowSizeProposal4 } from './useWindowSizeProposal4'
-import { prehook } from '../../lib/prehook/prehook'
+import {prehook, useEffect, useState} from '../../lib/prehook/prehook'
 
 
-interface IProps { }
-
-export const CustomHookedComponentProposal4 = prehook <IProps> ( function ( props )
+function useWindowSize ()
 {
-	const windowSize = useWindowSizeProposal4();
+	const size = useState({
+		width : window.innerWidth,
+		height : window.innerHeight
+	});
+
+	function resizeHandler ( e )
+	{
+		size({
+			width : window.innerWidth,
+			height : window.innerHeight
+		});
+	}
+
+	useEffect(false, () =>
+	{
+		window.addEventListener('resize', resizeHandler);
+
+		return () =>
+		{
+			window.removeEventListener('resize', resizeHandler);
+		}
+	});
+
+	return size;
+}
+
+export const CustomHookedComponentProposal4 = prehook( function ( props )
+{
+	const windowSize = useWindowSize();
 
 	return () => (
 		<div>

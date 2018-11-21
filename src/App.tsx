@@ -2,8 +2,6 @@ import "./App.less"
 import {h} from 'preact'
 import { HookedComponent } from "./HookedComponent";
 import { prehook, useState } from '../lib/prehook/prehook'
-import { CustomHookedComponentProposal1 } from './customHooks/CustomHookedComponentProposal1'
-import { CustomHookedComponentProposal2 } from './customHooks/CustomHookedComponentProposal2'
 import { CustomHookedComponentProposal4 } from './customHooks/CustomHookedComponentProposal4'
 
 // Quick function to generate a random hex color code
@@ -54,13 +52,10 @@ export const App = prehook <IProps> ( function ( props )
 					{/* Add HookedComponent into DOM if our state is true */}
 					<HookedComponent
 						defaultSuperProp={ defaultSuperProp }
-						color={ colorState() }
+						color={ colorState.value }
 						onDetach={ () => isHookedComponentVisible( false ) }
 					>
 						{/* Here we add a dynamic child with the children property */}
-						{/*<CustomHookedComponentProposal1 />
-						<hr />
-						<CustomHookedComponentProposal2 />*/}
 						<CustomHookedComponentProposal4 />
 					</HookedComponent>
 				</div>

@@ -49,7 +49,15 @@ interface IEffect
 
 
 // TODO : Better type with no any
-type IGetProps <GProps> = ( propName ?: (keyof GProps) ) => GProps|any;
+//type IGetProps <GProps> = ( propName ?: (keyof GProps) ) => GProps|any;
+
+interface IGetProps <GProps>
+{
+	( propName ?: (keyof GProps) ) : GProps|any
+
+	value : GProps
+}
+
 
 // TODO : Better type with no () => any
 type IFactory <GProps> = (props:IGetProps<GProps>) => (() => any);
@@ -127,6 +135,14 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 			: ( this.props || props )
 		);
 
+		// TODO DOC
+		getProps.value = props;
+
+		this.componentWillReceiveProps = (props) =>
+		{
+			getProps.value = props;
+		};
+
 
 		/**
 		 * Connecting hooks and init factory
@@ -169,11 +185,22 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 
 // ----------------------------------------------------------------------------- USE STATE
 
-interface IUsedState <T>
+/**
+ * Used state function interface returned by useState
+ */
+export interface IUsedState <T>
 {
-	( value ?: T ) : ( T | Promise<any> )
+	// Calling without argument will return the current state
+	() : T
 
-	value : T
+	// Calling with a new state as first argument
+	// Will set the state and re-render associated component
+	// A promise is returned to know when component will be re-rendered
+	( value : T ) : Promise<any>
+
+	// The returned used state from useState has a property
+	// named "value", which holds the current state as read-only.
+	readonly value : T
 }
 
 
@@ -194,33 +221,20 @@ export function useState <T> ( state:T ) : IUsedState<T>
 
 		// Save state value as a prop of the used state
 		// Storing it on the function will hold the value for this state
-		stateFactory.value = state;
+		stateFactory.value = value;
 
 		// Update component and return when complete as a promise
 		return new Promise(
 			resolve => component.forceUpdate( resolve )
 		)
-	}
+	};
 
 	// Set value for first time (before state is ever used)
 	stateFactory.value = state;
 
 	// Return state factory
-	return stateFactory;
+	return stateFactory as IUsedState<T>;
 }
-
-
-// ----------------------------------------------------------------------------- EXPOSE STATE
-
-// TODO : DOC
-export function exposeState <T> ( state : IUsedState<T> )
-{
-	return function ( pProp : keyof T )
-	{
-		return state.value[ pProp ];
-	}
-}
-
 
 // ----------------------------------------------------------------------------- USE EFFECT
 
