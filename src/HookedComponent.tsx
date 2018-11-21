@@ -1,5 +1,5 @@
 import './HookedComponent.less'
-import { h } from 'preact';
+import {ComponentChildren, h} from 'preact';
 import { prehook, useEffect, useState } from '../lib/prehook/prehook'
 import { useRef } from '../lib/prehook/useRef'
 
@@ -8,17 +8,15 @@ const generateRandomLengthArray = (max = 10) => Array.from({
 	length: Math.random() * max
 });
 
-// HookedComponent props
 interface IProps
 {
 	defaultSuperProp	?: number
 	onDetach			?: () => void
-	color				:number
-	children			?:any
+	color				:  number|string
+	children			?: ComponentChildren
 }
 
-
-export const HookedComponent = prehook <IProps> ( function ( props )
+export default prehook <IProps> ( function HookedComponent ( props )
 {
 	/**
 	 * 1. THE FACTORY PHASE
@@ -296,9 +294,4 @@ export const HookedComponent = prehook <IProps> ( function ( props )
 			<button onClick={ props.value.onDetach }>Detach this component</button>
 		</div>
 	)
-
-	// We pass the node's __filename so the prehook function know how to name
-	// the component. (it will parse the file name.)
-	// Then the filename is available in this (which is the component's instance
-	// as this.displayName. Which can be useful for automatic DOM class names.
-}, __filename);
+});

@@ -1,10 +1,15 @@
 import { shallowDiffers } from "./shallowDiffers";
-import {Component} from "preact";
+import { Component, ComponentChildren, FunctionalComponent } from "preact";
 
 
 // ----------------------------------------------------------------------------- HOOKED COMPONENT
 
-// TODO
+/**
+ * Interface of the current hooked component.
+ * The only important info here is that hooked component holds its own effects.
+ * Effects (with useEffect) add themselves to the hooked component through
+ * addEffect()
+ */
 interface IHookedComponent extends Component
 {
 	addEffect( effect:IEffect );
@@ -39,7 +44,10 @@ export function getHookedComponent ()
 
 // ----------------------------------------------------------------------------- PREHOOK COMPONENT HOC
 
-// TODO : Doc
+/**
+ * An effect holds 3 optional handlers to know when the component is mount,
+ * updated or unmount.
+ */
 interface IEffect
 {
 	mount	?: () => void
@@ -47,139 +55,153 @@ interface IEffect
 	unmount	?: () => void
 }
 
-
-// TODO : Better type with no any
-//type IGetProps <GProps> = ( propName ?: (keyof GProps) ) => GProps|any;
-
+/**
+ * To get current props and know when props are updated.
+ */
 interface IGetProps <GProps>
 {
-	( propName ?: (keyof GProps) ) : GProps|any
+	// Calling without argument will return the current props
+	// This is working like IUsedState
+	() : GProps
 
-	value : GProps
+	// Passing the name of a property as first argument
+	// Will return a function which will return property value when called.
+	// This is useful so effects know when a props change.
+	( propName ?: (keyof GProps) ) : (() => GProps)
+
+
+	// The returned used state from useState has a property
+	// named "value", which holds the current state as read-only.
+	// This is working like IUsedState
+	value ?: GProps
 }
 
 
-// TODO : Better type with no () => any
-type IFactory <GProps> = (props:IGetProps<GProps>) => (() => any);
+type IFactory <GProps> = (props : IGetProps<GProps>) => ( (...rest) => ComponentChildren );
 
 /**
- * TODO : Explain HOC, functional, render, etc ...
+ * Prehook function is a Higher Order Component.
+ * This function, when called, will return a decorated Preact component.
  * @param factory
- * @param fileName
  */
-export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: string)
+export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : FunctionalComponent<GProps>
 {
-	// Parse name from Node's __filename
-	let name = 'Component';
-	if ( fileName != null )
-	{
-		const pathParts = fileName.split('/');
-		name = pathParts[ pathParts.length - 1 ].split('.')[0];
-	}
+	// Get name from factory function name
+	const name = factory.name;
 
-	// Create the returned functional component
-	// Not as a class which extends Component
-	function Component (props, context) // FIXME- Do we keep context ?
-	{
-		// List of effects associated to this component instance
-		let effects:IEffect[] = [];
+	return {
 
-		/**
-		 * Name
-		 */
-
-		// Set display name on instance
-		this.displayName = name;
-
-		// Show this component as string
-		this.toString = () => `<${ name } ... />`;
-
-
-		/**
-		 * LifeCycle
-		 */
-
-		// When component is mounted by Preact
-		this.componentDidMount = () => (
-			// Call mount or update method on all effects
-			effects.forEach( e => e.mount && e.mount() )
-		);
-
-		// When component is updated by props or state
-		this.componentDidUpdate = () => (
-			// Call update method on all effects
-			effects.forEach( e => e.update && e.update() )
-		);
-
-		// When component will be removed by Preact
-		this.componentWillUnmount = () => (
-			// Call unmount method on all effects
-			effects.forEach( e => e.unmount && e.unmount() )
-		);
-
-		// Do a shallow differs detection to allow changes only when
-		// props or states changes. This will prevent render and save CPU cycles.
-		this.shouldComponentUpdate = ( nextProps ) => (
-			shallowDiffers( this.props, nextProps )
-		);
-
-
-		/**
-		 * Get props from factory and render
-		 */
-
-		// TODO DOC
-		const getProps:IGetProps <GProps> = ( propName ) => (
-			( propName != null )
-			? () => getProps()[ propName ]
-			: ( this.props || props )
-		);
-
-		// TODO DOC
-		getProps.value = props;
-
-		this.componentWillReceiveProps = (props) =>
+		// Create the prehook functional component
+		// Not as a class which extends Component
+		// This is the only way I found to set the component's name
+		[ name ] : function ( props )
 		{
+			// List of effects associated to this component instance
+			let effects:IEffect[] = [];
+
+			/**
+			 * Name
+			 */
+
+			// Set display name on instance
+			this.displayName = name;
+
+			// Show this component as string
+			this.toString = () => `<${ name } ... />`;
+
+
+			/**
+			 * LifeCycle
+			 */
+
+			// When component is mounted by Preact
+			this.componentDidMount = () => (
+				// Call mount or update method on all effects
+				effects.forEach( e => e.mount && e.mount() )
+			);
+
+			// When component is updated by props or state
+			this.componentDidUpdate = () => (
+				// Call update method on all effects
+				effects.forEach( e => e.update && e.update() )
+			);
+
+			// When component will be removed by Preact
+			this.componentWillUnmount = () => (
+				// Call unmount method on all effects
+				effects.forEach( e => e.unmount && e.unmount() )
+			);
+
+			// Do a shallow differs detection to allow changes only when
+			// props or states changes. This will prevent render and save CPU cycles.
+			this.shouldComponentUpdate = ( nextProps ) => (
+				shallowDiffers( this.props, nextProps )
+			);
+
+
+			/**
+			 * Get props from factory and render
+			 */
+
+			// The getProps function to track properties from components
+			// See @IGetProps to know more about how it works
+			const getProps:IGetProps <GProps> = ( propName ?: keyof GProps ) => (
+
+				// If we have a property name as first argument
+				// This is to watch the property from effects.
+				( propName != null )
+
+				// So we return a function which gives the value of the property
+				? () => (getProps.value[ propName ])
+
+				// Otherwise (no first argument), we return the whole props object
+				: ( this.props || props )
+			);
+
+			// Set the value property on getProps for the first time
+			// We set it as first props of the component
 			getProps.value = props;
-		};
+
+			// When props will change
+			this.componentWillReceiveProps = (props) =>
+			{
+				// Update value on the getProps so components can get the new props
+				// without querying getProps()
+				getProps.value = props;
+			};
 
 
-		/**
-		 * Connecting hooks and init factory
-		 */
+			/**
+			 * Connecting hooks and init factory
+			 */
 
-		// Add an effect to this component instance
-		this.addEffect = ( effect:IEffect ) => effects.push( effect );
+			// Add an effect to this component instance
+			this.addEffect = ( effect:IEffect ) => effects.push( effect );
 
-		// Set current hook as this component
-		// All hook declared in the next factory will be added to this hook
-		// No other components can be created at the same time so it should be ok
-		hookedComponent = this;
+			// Set current hook as this component
+			// All hook declared in the next factory will be added to this hook
+			// No other components can be created at the same time so it should be ok
+			hookedComponent = this;
 
-		// Here we call our component factory function
-		// with current scope and arguments.
-		// We save factory return as this render method so Preact can call it.
-		this.render = factory.call( this, getProps, context );
+			// Here we call our component factory function
+			// with current scope and arguments.
+			// We save factory return as this render method so Preact can call it.
+			this.render = factory.call( this, getProps );
 
-		// Remove current hooked component reference
-		// now we are done with this factory
-		hookedComponent = null;
+			// Remove current hooked component reference
+			// now we are done with this factory
+			hookedComponent = null;
 
 
-		/**
-		 * Render
-		 */
+			/**
+			 * Render
+			 */
 
-		// Return first render because we are in functional component
-		// And preact won't call render() for this time.
-		return this.render.apply( this );
-	}
-
-	// Set name on functional component
-	Object.defineProperty(Component, 'name', { value: name });
-
-	// Return functional component
-	return Component;
+			// Return first render because we are in functional component
+			// And preact won't call render() for this time.
+			return this.render.apply( this );
+		}
+	}[ name ];
 }
 
 
@@ -188,19 +210,21 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps>, fileName ?: 
 /**
  * Used state function interface returned by useState
  */
-export interface IUsedState <T>
+export interface IUsedState <GState>
 {
 	// Calling without argument will return the current state
-	() : T
+	// This is working like IGetProps
+	() : GState
 
 	// Calling with a new state as first argument
 	// Will set the state and re-render associated component
 	// A promise is returned to know when component will be re-rendered
-	( value : T ) : Promise<any>
+	( value : GState ) : Promise<any>
 
 	// The returned used state from useState has a property
 	// named "value", which holds the current state as read-only.
-	readonly value : T
+	// This is working like IGetProps
+	value : GState
 }
 
 
@@ -208,13 +232,13 @@ export interface IUsedState <T>
  * TODO : DOC
  * @param state
  */
-export function useState <T> ( state:T ) : IUsedState<T>
+export function useState <GState> ( state:GState ) : IUsedState<GState>
 {
 	// Get current component and keep its ref in this scope
 	const component = getHookedComponent();
 
 	// Return a function which is getter and setter
-	const stateFactory = function ( value ?: T )
+	const stateFactory = function ( value ?: GState )
 	{
 		// Just return state if there is no new state to set
 		if ( value == null ) return stateFactory.value;
@@ -233,7 +257,7 @@ export function useState <T> ( state:T ) : IUsedState<T>
 	stateFactory.value = state;
 
 	// Return state factory
-	return stateFactory as IUsedState<T>;
+	return stateFactory as IUsedState<GState>;
 }
 
 // ----------------------------------------------------------------------------- USE EFFECT

@@ -1,20 +1,18 @@
 import "./App.less"
 import {h} from 'preact'
-import { HookedComponent } from "./HookedComponent";
-import { prehook, useState } from '../lib/prehook/prehook'
-import { CustomHookedComponentProposal4 } from './customHooks/CustomHookedComponentProposal4'
+import HookedComponent from "./HookedComponent";
+import {prehook, useState} from '../lib/prehook/prehook'
+import CustomHookComponent from "./CustomHookComponent";
+import CustomHookComponent2 from "./CustomHookComponent2";
 
 // Quick function to generate a random hex color code
 const getRandomColor = () => '#' + Math.floor( Math.random() * 16777215 ).toString( 16 );
-
-// App props
-interface IProps { }
 
 /**
  * Declare our App component as a Prehook component.
  * We use IProps to define which props are available on this component.
  */
-export const App = prehook <IProps> ( function ( props )
+export default prehook ( function App ( props )
 {
 	// We create a state to toggle HookedComponent visibility
 	// The default value of the state is true
@@ -56,7 +54,16 @@ export const App = prehook <IProps> ( function ( props )
 						onDetach={ () => isHookedComponentVisible( false ) }
 					>
 						{/* Here we add a dynamic child with the children property */}
-						<CustomHookedComponentProposal4 />
+						{/* Those components show how custom hooks works */}
+
+						{/* First usage of the useWindowSize custom hook : */}
+						<CustomHookComponent />
+
+						{/* Other usage of the same custom hook : */}
+						<hr />
+						<CustomHookComponent2
+							color={ colorState.value }
+						/>
 					</HookedComponent>
 				</div>
 

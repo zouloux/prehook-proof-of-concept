@@ -1,6 +1,6 @@
 import './index.less';
 import { h, render } from 'preact';
-import { App } from './App';
+import App from "./App";
 
 // Enable React devtools on dev mode
 // FIXME - Marche pas ?
