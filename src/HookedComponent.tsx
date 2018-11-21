@@ -236,7 +236,7 @@ export default prehook <IProps> ( function HookedComponent ( props )
 	 */
 	return () => (
 		console.log('Render phase ...'),
-		<div class={ this.displayName }>
+		<div class="HookedComponent">
 			<h2>Hooked Component</h2>
 
 			{/* Show color from props  */}
