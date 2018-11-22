@@ -1,5 +1,7 @@
 import { getHookedComponent } from "./prehook";
 
+// TODO : add current and all props
+
 /**
  * TODO : DOC
  * TODO : Type
@@ -17,11 +19,8 @@ export function useRef ()
 	// Quickly add an effect on the current hooked component
 	// This will help us to know when the component is unmount.
 	getHookedComponent().addEffect({
-		unmount: () =>
-		{
-			// Kill nodes array so returned functions are annihilated
-			nodes = null;
-		}
+		// Kill nodes array so returned functions are annihilated
+		unmount: () => nodes = null
 	});
 
 	// We return a ref function.

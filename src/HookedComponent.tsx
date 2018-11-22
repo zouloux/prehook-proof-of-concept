@@ -1,6 +1,6 @@
 import './HookedComponent.less'
 import {ComponentChildren, h} from 'preact';
-import { prehook, useEffect, useState } from '../lib/prehook/prehook'
+import {prehook, useEffect, useProps, useState} from '../lib/prehook/prehook'
 import { useRef } from '../lib/prehook/useRef'
 
 // A quick utils to generate a an array of a random length
@@ -16,7 +16,7 @@ interface IProps
 	children			?: ComponentChildren
 }
 
-export default prehook <IProps> ( function HookedComponent ( props )
+export default prehook <IProps> ( function HookedComponent ()
 {
 	/**
 	 * 1. THE FACTORY PHASE
@@ -38,10 +38,16 @@ export default prehook <IProps> ( function HookedComponent ( props )
 	 * 2. ABOUT PROPS
 	 *
 	 * Because this factory phase is ran only once, accessing props changes would
-	 * be impossible. This is why props here is a function which gather props when called.
+	 * be impossible. This is why props are optionally gathered from useProps hook.
 	 *
 	 * -> props.value.color gives the color at any time (not only in factory phase scope !)
+	 *
+	 * First parameter of useProps is default props
 	 */
+	const props = useProps<IProps>({
+		defaultSuperProp: 0
+	});
+
 
 	/**
 	 * 3. USE STATE
@@ -59,8 +65,7 @@ export default prehook <IProps> ( function HookedComponent ( props )
 	 */
 	const clickState = useState({
 		// Here we get the default value from props
-		// 0 is the default value if defaultSuperProp is not defined.
-		superProp: props.value.defaultSuperProp || 0
+		superProp: props.value.defaultSuperProp
 	});
 
 	/**

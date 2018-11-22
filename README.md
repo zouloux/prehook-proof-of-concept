@@ -12,8 +12,8 @@ React as a solution for patching performances with `useMemoization` and `useCall
 3. Also, the ["don't use hooks in conditions"](https://youtu.be/dpw9EHDh2bM?t=1942) is a problem to me. It shows that there is to much "auto-magic" stuff going on under the hood. Which is not aviced when you dive into a new lib / way of thinking. People need to understands how it works so it's not frustrating. And to me, linters should not be mandatory to use a lib, syntax have to be expressive and clear.
 
 ### Size
-For now the POC is **2KB not GZip** added to the Preact core with `useState`, `useEffect` and better `useRef`.
-This example is **15KB not GZip** with Preact + Prehook + working example.
+For now the POC is **less than 3KB (not GZip)** added to the Preact core with `useProps` `useState`, `useEffect` and a better `useRef`.
+This example is **16KB (not GZip)** with Preact + Prehook + working example.
 I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 
 ### Differences
@@ -24,6 +24,7 @@ I plan to add `useReducer` and `useContext` as separated files (like `useRef`).
 5. `useState` have a slightly different API. With more functional approach.
 6. Ref's are more usable with solo refs and multi-refs.
 7. `useEffect` update condition are on top of the declaration, before implementation. Small diff but cleaner and more readable code.
+8. Props are gathered and defaulted with `useProps` hook.
 
 No need for React's [useMemo](https://reactjs.org/docs/hooks-reference.html#usememo) and [useCallback](https://reactjs.org/docs/hooks-reference.html#usecallback) for example.
 Which help keep our apps **fast and simple**.
@@ -40,18 +41,23 @@ Thanks !
 
 The more important aspect of the lib, is the Factory phase and Render phase.
 Factory phase scope leak through all the component, but is called once.
+#### Factory and render
 ![Prehook Factory Render Example](img/1-prehook-factory-render.png)
 
-States differences.
+#### States differences.
 ![Prehook Use State Example](img/2-prehook-use-state.png)
 
-Use effect example.
+#### Use effect example.
 ![Prehook Use Effect Simple Example](img/3-prehook-use-effect-simple.png)
+( There is an example of effect watching a prop below )
 
-Use effect with optimized state example.
+#### Use effect with optimized state example.
 ![Prehook Use Effect and Use StateExample](img/4-prehook-use-effect-use-state.png)
 
-*More example to come ...*
+#### Custom hook
+
+Here is a custom hook implementation :
+- [useWindowSize.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/useWindowSize.ts)
 
 
 ### Curious ?
@@ -70,6 +76,8 @@ The lib :
 
 
 ## Installation
+
+*Packages are installed automatically*
 
 ### Dev mode
 Will watch files and check Typescript.

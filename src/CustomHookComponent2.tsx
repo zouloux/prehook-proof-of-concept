@@ -1,5 +1,5 @@
 import {h} from "preact";
-import {prehook} from "../lib/prehook/prehook";
+import {prehook, useProps} from "../lib/prehook/prehook";
 import {useWindowSize} from "./useWindowSize";
 
 
@@ -8,10 +8,15 @@ interface IProps
 	color: number|string;
 }
 
-export default prehook <IProps> ( function CustomHookComponent2 ( props )
+export default prehook <IProps> ( function CustomHookComponent2 ()
 {
 	// We use our custom hook to track window size
 	const windowSize = useWindowSize();
+
+	// Get props with default values
+	const props = useProps<IProps>({
+		color: 'black'
+	});
 
 	// Here returned render function is optimized to declare values
 	return () =>

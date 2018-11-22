@@ -3,7 +3,7 @@ import {prehook} from "../lib/prehook/prehook";
 import {useWindowSize} from "./useWindowSize";
 
 
-export default prehook <{}> ( function CustomHookComponent ( props )
+export default prehook( function CustomHookComponent ()
 {
 	const windowSize = useWindowSize();
 

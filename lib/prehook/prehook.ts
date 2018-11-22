@@ -55,28 +55,6 @@ interface IEffect
 	unmount	?: () => void
 }
 
-/**
- * To get current props and know when props are updated.
- */
-interface IGetProps <GProps>
-{
-	// Calling without argument will return the current props
-	// This is working like IUsedState
-	() : GProps
-
-	// Passing the name of a property as first argument
-	// Will return a function which will return property value when called.
-	// This is useful so effects know when a props change.
-	( propName ?: (keyof GProps) ) : (() => GProps)
-
-
-	// The returned used state from useState has a property
-	// named "value", which holds the current state as read-only.
-	// This is working like IUsedState
-	value ?: GProps
-}
-
-
 type IFactory <GProps> = (props : IGetProps<GProps>) => ( (...rest) => ComponentChildren );
 
 /**
@@ -86,6 +64,8 @@ type IFactory <GProps> = (props : IGetProps<GProps>) => ( (...rest) => Component
  */
 export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : FunctionalComponent<GProps>
 {
+	// TODO : Terser is removing function name in production build.
+
 	// Get name from factory function name
 	const name = factory.name;
 
@@ -93,8 +73,8 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : Functiona
 
 		// Create the prehook functional component
 		// Not as a class which extends Component
-		// This is the only way I found to set the component's name
-		[ name ] : function ( props )
+		// This is the only way I found to set the component's name dynamically
+		[ name ] : function ()
 		{
 			// List of effects associated to this component instance
 			let effects:IEffect[] = [];
@@ -140,38 +120,6 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : Functiona
 
 
 			/**
-			 * Get props from factory and render
-			 */
-
-			// The getProps function to track properties from components
-			// See @IGetProps to know more about how it works
-			const getProps:IGetProps <GProps> = ( propName ?: keyof GProps ) => (
-
-				// If we have a property name as first argument
-				// This is to watch the property from effects.
-				( propName != null )
-
-				// So we return a function which gives the value of the property
-				? () => (getProps.value[ propName ])
-
-				// Otherwise (no first argument), we return the whole props object
-				: ( this.props || props )
-			);
-
-			// Set the value property on getProps for the first time
-			// We set it as first props of the component
-			getProps.value = props;
-
-			// When props will change
-			this.componentWillReceiveProps = (props) =>
-			{
-				// Update value on the getProps so components can get the new props
-				// without querying getProps()
-				getProps.value = props;
-			};
-
-
-			/**
 			 * Connecting hooks and init factory
 			 */
 
@@ -186,7 +134,7 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : Functiona
 			// Here we call our component factory function
 			// with current scope and arguments.
 			// We save factory return as this render method so Preact can call it.
-			this.render = factory.call( this, getProps );
+			this.render = factory.call( this );
 
 			// Remove current hooked component reference
 			// now we are done with this factory
@@ -202,6 +150,105 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : Functiona
 			return this.render.apply( this );
 		}
 	}[ name ];
+}
+
+
+// ----------------------------------------------------------------------------- USE PROPS
+
+/**
+ * To get current props and know when props are updated.
+ */
+interface IGetProps <GProps>
+{
+	// Calling without argument will return the current props
+	// This is working like IUsedState
+	() : GProps
+
+	// Passing the name of a property as first argument
+	// Will return a function which will return property value when called.
+	// This is useful so effects know when a props change.
+	( propName ?: (keyof GProps) ) : (() => keyof GProps)
+
+
+	// The returned used state from useState has a property
+	// named "value", which holds the current state as read-only.
+	// This is working like IUsedState
+	value ?: GProps
+}
+
+/**
+ * Inject default properties into actual property bag.
+ * Default props object does not need to satisfy all GProps interface but have
+ * to declare only props of it.
+ * @param defaultProps Default properties key and values.
+ * @param actualProps Actual properties to default. Will be mutated.
+ * @returns {GProps} Mutated and defaulted actualProps.
+ */
+function injectDefault <GProps> (defaultProps, actualProps) : GProps
+{
+	// NOTE : We allow mutation here because do not want to create a new
+	// props instance. We mutate it so it's going to component as if it was
+	// already with default values.
+
+	// Inject every default prop into actual props
+	// if this property key does not exists in actual props
+	Object.keys( defaultProps ).map( propKey =>
+	{
+		// Inject in actual props if key is not present
+		if ( !(propKey in actualProps) )
+			actualProps[ propKey ] = defaultProps[ propKey ];
+	});
+
+	// Return actual props so we can chain
+	return actualProps;
+}
+
+/**
+ * TODO
+ * @param {Partial<GProps>} defaultProps
+ * @returns {IGetProps<GProps>}
+ */
+export function useProps <GProps> ( defaultProps ?: Partial<GProps> )
+{
+	// Get current component and keep its ref in this scope
+	const component = getHookedComponent();
+
+	// Throw errors if useProps has already been used on this component
+	// Only on dev to exclude this code from production builds
+	if ( process.env.NODE_ENV !== 'production' )
+	{
+		( hookedComponent.componentWillReceiveProps != null )
+		&&
+		console.error(`Prehook error // useProps can only be used once by component.`);
+	}
+
+	// Returned get props function.
+	const getProps:IGetProps <GProps> = ( propName ? ) => (
+
+		// If we have a property name as first argument
+		// This is to watch the property from effects.
+		( propName != null )
+
+		// So we return a function which gives the value of the property
+		? () => getProps.value[ propName ]
+
+		// Otherwise (no first argument), we return the whole props object
+		: getProps.value as any // FIXME any ?
+	);
+
+	// Set the value property on getProps for the first time
+	// We set it as first props of the component
+	getProps.value = injectDefault<GProps>(defaultProps, component.props);
+
+	// Listen to new props from hooked component with componentWillReceiveProps
+	component.componentWillReceiveProps = (props:GProps) =>
+	{
+		// Update value on the getProps so components can get the new props
+		// without querying getProps()
+		getProps.value = injectDefault<GProps>(defaultProps, props);
+	};
+
+	return getProps;
 }
 
 

@@ -10,9 +10,8 @@ const getRandomColor = () => '#' + Math.floor( Math.random() * 16777215 ).toStri
 
 /**
  * Declare our App component as a Prehook component.
- * We use IProps to define which props are available on this component.
  */
-export default prehook ( function App ( props )
+export default prehook ( function App ()
 {
 	// We create a state to toggle HookedComponent visibility
 	// The default value of the state is true
