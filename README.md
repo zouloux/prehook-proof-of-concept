@@ -56,8 +56,12 @@ Factory phase scope leak through all the component, but is called once.
 
 #### Custom hook
 
-Here is a custom hook implementation :
+Here is a custom hook implementation example :
 - [useWindowSize.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/useWindowSize.ts)
+
+And two usages of the same hook :
+- [CustomHookComponent.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/CustomHookComponent.tsx)
+- [CustomHookComponent2.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/CustomHookComponent2.tsx)
 
 
 ### Curious ?
