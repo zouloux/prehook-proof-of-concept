@@ -42,22 +42,22 @@ Thanks !
 The more important aspect of the lib, is the Factory phase and Render phase.
 Factory phase scope leak through all the component, but is called once.
 #### Factory and render
-![Prehook Factory Render Example](img/1-prehook-factory-render.png =400)
+![Prehook Factory Render Example](img/1-prehook-factory-render.png =400x)
 
 #### States differences.
-![Prehook Use State Example](img/2-prehook-use-state.png)
+![Prehook Use State Example](img/2-prehook-use-state.png =400x)
 
 #### Use effect example.
-![Prehook Use Effect Simple Example](img/3-prehook-use-effect-simple.png =400)
+![Prehook Use Effect Simple Example](img/3-prehook-use-effect-simple.png =400x)
 ( There is an example of effect watching a prop below )
 
 #### Use effect with optimized state example.
-![Prehook Use Effect and Use StateExample](img/4-prehook-use-effect-use-state.png =400)
+![Prehook Use Effect and Use StateExample](img/4-prehook-use-effect-use-state.png =400x)
 
 #### Custom hook
 
 Here is a custom hook implementation :
-- [useWindowSize.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/useWindowSize.ts =400)
+- [useWindowSize.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/useWindowSize.ts)
 
 
 ### Curious ?
