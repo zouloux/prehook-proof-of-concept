@@ -1,5 +1,17 @@
-import { shallowDiffers } from "./shallowDiffers";
 import { Component, ComponentChildren, FunctionalComponent } from "preact";
+
+// ----------------------------------------------------------------------------- UTILS
+
+/**
+ * Make shallow differs between 2 objects.
+ * Will check if properties have same references.
+ */
+export function shallowDiffers (a, b)
+{
+	for (let i in a) if (!(i in b)) return true
+	for (let i in b) if (a[i] !== b[i]) return true
+	return false
+}
 
 
 // ----------------------------------------------------------------------------- HOOKED COMPONENT
@@ -14,7 +26,6 @@ interface IHookedComponent extends Component
 {
 	addEffect( effect:IEffect );
 }
-
 
 // The current hooked component.
 // This is only set when a component is in factory phase
@@ -38,9 +49,9 @@ export function getHookedComponent ()
 		&&
 		console.error(`Prehook error // A hook is being used outside of a component's factory phase.`);
 	}
+
 	return hookedComponent;
 }
-
 
 // ----------------------------------------------------------------------------- PREHOOK COMPONENT HOC
 
@@ -55,7 +66,11 @@ interface IEffect
 	unmount	?: () => void
 }
 
-type IFactory <GProps> = (props : IGetProps<GProps>) => ( (...rest) => ComponentChildren );
+/**
+ * Type of the HOC's Factory.
+ * A Factory function which returns a render function (which returns JSX DOM)
+ */
+type IFactory <GProps> = () => ( () => ComponentChildren );
 
 /**
  * Prehook function is a Higher Order Component.
@@ -204,12 +219,29 @@ function injectDefault <GProps> (defaultProps, actualProps) : GProps
 }
 
 /**
- * TODO
- * @param {Partial<GProps>} defaultProps
- * @returns {IGetProps<GProps>}
+ * Use props to access to current hooked component passed properties.
+ * -> const props = useProps();
+ *
+ * Set default properties by defining them as first argument
+ * -> const props = useProps({
+ *     title: 'Default title'
+ * });
+ *
+ * Read current props's value by calling props function
+ * -> props().title
+ *
+ * Read current props's alue by accessing with value property
+ * -> props.value.title
+ *
+ * Create a prop watcher for useEffect by calling props with property key as
+ * first argument
+ * -> props('title') // will return () => props.value.title
  */
 export function useProps <GProps> ( defaultProps ?: Partial<GProps> )
 {
+	// TODO : Automatically read GProps from this here (or function.caller)
+	// TODO : To avoid passing them to component + getProps
+
 	// Get current component and keep its ref in this scope
 	const component = getHookedComponent();
 
@@ -266,7 +298,10 @@ export interface IUsedState <GState>
 	// Calling with a new state as first argument
 	// Will set the state and re-render associated component
 	// A promise is returned to know when component will be re-rendered
-	( value : GState ) : Promise<any>
+	//
+	// Passed value can also be a function which will get current value
+	// as first argument, and will get value as return.
+	( value : GState | ((current:GState) => GState) ) : Promise<any>
 
 	// The returned used state from useState has a property
 	// named "value", which holds the current state as read-only.
@@ -276,8 +311,29 @@ export interface IUsedState <GState>
 
 
 /**
- * TODO : DOC
- * @param state
+ * Create a state attached to the current hooked component.
+ * -> const clickState = this.useState();
+ *
+ * Set the starting value as first argument
+ * -> const clickState = this.useState( 0 );
+ *
+ * Read current state value by calling state function
+ * -> clickState()
+ *
+ * Read current state value by accessing with value property
+ * -> clickState.value.title
+ *
+ * Update current state value by passing the new value as first argument
+ * -> clickState( 1 )
+ *
+ * Update current state value by passing function as first argument
+ * -> clickState( current => current + 1 )
+ *
+ * Hooked component will be automatically updated and re-rendered after state
+ * changes.
+ *
+ * A promise is returned when setting a new value. This promise is resolved when
+ * component as rendered.
  */
 export function useState <GState> ( state:GState ) : IUsedState<GState>
 {
@@ -285,10 +341,15 @@ export function useState <GState> ( state:GState ) : IUsedState<GState>
 	const component = getHookedComponent();
 
 	// Return a function which is getter and setter
-	const stateFactory = function ( value ?: GState )
+	const stateFactory = function ( value ? )
 	{
 		// Just return state if there is no new state to set
 		if ( value == null ) return stateFactory.value;
+
+		// If passed argument is a function
+		// Call it by passing current value and getting returned value
+		if ( typeof value === 'function' )
+			value = value( stateFactory.value );
 
 		// Save state value as a prop of the used state
 		// Storing it on the function will hold the value for this state
@@ -309,23 +370,30 @@ export function useState <GState> ( state:GState ) : IUsedState<GState>
 
 // ----------------------------------------------------------------------------- USE EFFECT
 
-// TODO : Proposer une API qui permet de vérifier les changements autre que les states
-// TODO : Comme les props par ex, mais ça va être compliqué vu que ce ne sont pas des fonctions ?
+/**
+ * Type of mount handler.
+ * Mount handler is function which optionally returns an unmount function.
+ */
+type IMountHandler = () => ( (() => void)|void );
 
-// TODO : DOC
-// TODO : Better type
-type IMountHandler = () => (() => void)|null|undefined|void;
-
-// TODO : Doc
-type IStates = ( (...rest) => any )[];
+/**
+ * Watched states is a list of watcher.
+ * A watcher is just a function returning the current value when called.
+ * Directly states or watched props like so :
+ * -> [ clickState, props('title') ]
+ */
+type IWatchedStates = ( ( ...rest) => any )[];
 
 
 /**
- * TODO : DOC
+ * UseEffect to follow hooked component life cycle.
+ *
+ * TODO
+ *
  * @param statesOrEffect
  * @param mountHandler
  */
-export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect | boolean), mountHandler ?: IMountHandler )
+export function useEffect ( statesOrEffect : (IWatchedStates | IMountHandler | IEffect | boolean), mountHandler ?: IMountHandler )
 {
 	// Get current component and keep its ref in this scope
 	const component = getHookedComponent();
@@ -344,7 +412,7 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect 
 
 	// Check if states parameter is present
 	// And collapse arguments if mountHandler is on states argument slot
-	let states:IStates = statesOrEffect as IStates;
+	let states:IWatchedStates = statesOrEffect as IWatchedStates;
 	if ( mountHandler == null && typeofFirst === 'function' )
 	{
 		mountHandler = (statesOrEffect as IMountHandler);
@@ -364,7 +432,7 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect 
 		// If first argument is a false
 		( typeofFirst === 'boolean' && !statesOrEffect )
 		// or if first argument is an empty array
-		|| ( isArrayFirst && (statesOrEffect as IStates).length == 0 )
+		|| ( isArrayFirst && (statesOrEffect as IWatchedStates).length == 0 )
 	) {
 		// This is a subscribe effect.
 		// Only mount and unmount will be called, update will never fire.
@@ -399,10 +467,8 @@ export function useEffect ( statesOrEffect : (IStates | IMountHandler | IEffect 
 				const newStates = updateStates();
 
 				// Extract changes between old and new states values
-				// TODO : ShallowDiffers ici ? Ce serait mieux pour les objects !
-				// TODO : Shallow uniquement si c'est un objet du coup faut check donc perte de perfs
-				// TODO : Peut-être pas utile car en fait on veut update lorsque state change de ref
-				// TODO : Donc ça devrait le faire ! A tester ...
+				// No shallowDiffers here because we want to re-render if any
+				// watched state or props have changed ref (no mutation allowed)
 				const differences = newStates.filter( (state, i) => state != currentStates[ i ] );
 
 				// Register new states values

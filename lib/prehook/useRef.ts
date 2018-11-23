@@ -1,6 +1,6 @@
 import { getHookedComponent } from "./prehook";
 
-// TODO : add current and all props
+// TODO : add .current and .all props
 
 /**
  * TODO : DOC
