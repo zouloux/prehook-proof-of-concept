@@ -81,8 +81,8 @@ export function prehook <GProps = {}> ( factory : IFactory<GProps> ) : Functiona
 {
 	// TODO : Terser is removing function name in production build.
 
-	// Get name from factory function name
-	const name = factory.name;
+	// Get name from factory function name and default it to Component
+	const name = factory.name || 'Component';
 
 	return {
 
@@ -388,10 +388,60 @@ type IWatchedStates = ( ( ...rest) => any )[];
 /**
  * UseEffect to follow hooked component life cycle.
  *
- * TODO
+ * Know when component has just rendered
+ * -> useEffect( () => {
+ *     // Component rendered (cDM, cDU)
+ * });
  *
- * @param statesOrEffect
- * @param mountHandler
+ * Know when component has just rendered and before update render
+ * -> useEffect( () => {
+ *     // Component rendered (cDM, cDU)
+ *     return () => {
+ *         // Before component rendering and after unmount
+ *     }
+ * });
+ *
+ * Know when component will mount and unmount
+ * -> useEffect( false, () => {
+ *     // Mount
+ *     return () =>
+ *     {
+ *     	   // Unmount
+ *     }
+ * });
+ *
+ * Know when a state is changed and component rendered
+ * -> useEffect( [ clickState ], () => {
+ *     // State updated and component rendered
+ *     // Also after first render
+ *     return () => {
+ *         // State changed but before next render
+ *         // Also when component is unmount
+ *     }
+ * });
+ *
+ * Know when a prop is changed and component rendered
+ * -> useEffect( [ props('title') ], () => {
+ *     // Prop title updated and component rendered
+ *     // Also after first render
+ *     return () => {
+ *         // Prop title changed but before next render
+ *         // Also when component is unmount
+ *     }
+ * });
+ *
+ * You can mix-up properties and state watching by added them the first array.
+ * This will act when any of the 2 will change.
+ * -> useEffect( [ props('title'), clickState ], ... )
+ *
+ * If you do not need leaking scope of the mount handler to the unmount handler,
+ * and/or if you need to distinguish mount from update from unmount.
+ * All function are optional so you can only hook update if you want.
+ * -> useEffect({
+ *     mount	: () => { // called when component is mount }
+ *     update	: () => { // called when component has updated }
+ *     unmount	: () => { // called when component will unmount }
+ * });
  */
 export function useEffect ( statesOrEffect : (IWatchedStates | IMountHandler | IEffect | boolean), mountHandler ?: IMountHandler )
 {
