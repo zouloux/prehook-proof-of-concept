@@ -58,25 +58,25 @@ The more important aspect of the lib, is the **Factory phase and Render phase**.
 #### Custom hook
 
 Here is a custom hook implementation example :
-- [useWindowSize.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/useWindowSize.ts)
+- [useWindowSize.ts](https://github.com/zouloux/prehook-proof-of-concept/blob/master/src/useWindowSize.ts)
 
 And two usages of the same hook :
-- [CustomHookComponent.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/CustomHookComponent.tsx)
-- [CustomHookComponent2.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/CustomHookComponent2.tsx)
+- [CustomHookComponent.tsx](https://github.com/zouloux/prehook-proof-of-concept/blob/master/src/CustomHookComponent.tsx)
+- [CustomHookComponent2.tsx](https://github.com/zouloux/prehook-proof-of-concept/blob/master/src/CustomHookComponent2.tsx)
 
 
 ### Curious ?
 
-- [See it in action !](https://solid-js.github.io/prehook-proof-of-concept/)
+- [See it in action !](https://zouloux.github.io/prehook-proof-of-concept/)
 
 If you just want to check implementation without installing :
 Example :
-- [App.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/App.tsx)
-- [HookedComponent.tsx](https://github.com/solid-js/prehook-proof-of-concept/blob/master/src/HookedComponent.tsx)
+- [App.tsx](https://github.com/zouloux/prehook-proof-of-concept/blob/master/src/App.tsx)
+- [HookedComponent.tsx](https://github.com/zouloux/prehook-proof-of-concept/blob/master/src/HookedComponent.tsx)
 
 The lib :
-- [prehook.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/prehook.ts)
-- [useRef.ts](https://github.com/solid-js/prehook-proof-of-concept/blob/master/lib/prehook/useRef.ts)
+- [prehook.ts](https://github.com/zouloux/prehook-proof-of-concept/blob/master/lib/prehook/prehook.ts)
+- [useRef.ts](https://github.com/zouloux/prehook-proof-of-concept/blob/master/lib/prehook/useRef.ts)
 
 
 
