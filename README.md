@@ -1,7 +1,8 @@
-# Prehook is now Reflex
+# Prehook is now [Reflex](https://github.com/zouloux/reflex)
 
 
 Prehook becomes [Reflex](https://github.com/zouloux/reflex), a tiny V-dom library with factory phase functions ✨
+
 
 ---
 
