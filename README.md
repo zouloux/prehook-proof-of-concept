@@ -1,3 +1,11 @@
+# Prehook is now Reflex
+
+
+Prehook becomes [Reflex](https://github.com/zouloux/reflex), a tiny V-dom library with factory phase functions ✨
+
+---
+
+
 # Prehook (Preact + Hooks) Proof Of Concept
 This is a proof of concept of a [React Hooks](https://reactjs.org/docs/hooks-reference.html) pattern but for [Preact](https://preactjs.com/).
 
